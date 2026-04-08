@@ -1,0 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+html {
+  box-sizing: border-box;
+}
+
+*, ::after, ::before {
+  box-sizing: inherit;
+}
+
+body {
+  background-color: #f3f4f6;
+  margin: 0;
+  padding: 40px;
+  font-family: 'Inter', 'Poppins', sans-serif;
+  word-break: break-word;
+  color: #1a1a1a;
+
+  @media (max-width: 640px) {
+    padding: 16px;
+  }
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  opacity: 0.5;
+}

@@ -1,0 +1,77 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.15s ease;
+}
+
+.dialog {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px 28px;
+  max-width: 360px;
+  width: 90%;
+  text-align: center;
+  animation: scaleIn 0.2s ease;
+
+  &__icon {
+    font-size: 36px;
+    margin-bottom: 12px;
+  }
+
+  &__title {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 8px;
+    color: #1a1a1a;
+  }
+
+  &__text {
+    font-size: 14px;
+    color: #666;
+    margin: 0 0 24px;
+    line-height: 1.5;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+}
+
+.btn {
+  padding: 10px 24px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+
+  &--cancel {
+    background: #f0f0f0;
+    color: #333;
+    &:hover { background: #e0e0e0; }
+  }
+
+  &--confirm {
+    background: #e53935;
+    color: #fff;
+    &:hover { background: #c62828; }
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.92); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}

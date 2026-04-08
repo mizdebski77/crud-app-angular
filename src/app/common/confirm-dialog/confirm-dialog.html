@@ -1,0 +1,11 @@
+<div class="overlay" *ngIf="visible" (click)="onCancel()">
+  <div class="dialog" (click)="$event.stopPropagation()">
+    <div class="dialog__icon">⚠</div>
+    <h3 class="dialog__title">Delete campaign?</h3>
+    <p class="dialog__text">This action cannot be undone. The campaign budget will be returned to your account.</p>
+    <div class="dialog__actions">
+      <button class="btn btn--cancel" (click)="onCancel()">Cancel</button>
+      <button class="btn btn--confirm" (click)="onConfirm()">Delete</button>
+    </div>
+  </div>
+</div>

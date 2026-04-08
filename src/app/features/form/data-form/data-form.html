@@ -1,0 +1,187 @@
+<div class="page-wrapper">
+
+  <!-- Dashboard Header -->
+  <div class="dashboard-header">
+    <div class="dashboard-header__left">
+      <span class="brand-icon">◈</span>
+      <div>
+        <div class="brand-name">AdManager</div>
+        <div class="brand-sub">Campaign Dashboard</div>
+      </div>
+    </div>
+    <button class="btn btn--ghost" (click)="navigateToHome()">← Back</button>
+  </div>
+
+  <!-- Metric Cards -->
+  <ng-container *ngIf="(totalBudget$ | async) as total">
+    <ng-container *ngIf="(spentBudget$ | async) as spent">
+      <ng-container *ngIf="(availableBudget$ | async) as available">
+        <div class="metrics">
+          <div class="metric-card">
+            <span class="metric-card__label">Total Budget</span>
+            <span class="metric-card__value">{{ total | number:'1.0-0' }} <span class="metric-card__unit">PLN</span></span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-card__label">Allocated</span>
+            <span class="metric-card__value metric-card__value--spent">{{ spent | number:'1.0-0' }} <span class="metric-card__unit">PLN</span></span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-card__label">Available</span>
+            <span class="metric-card__value metric-card__value--available">{{ available | number:'1.0-0' }} <span class="metric-card__unit">PLN</span></span>
+          </div>
+          <div class="metric-card metric-card--wide">
+            <span class="metric-card__label">Budget utilization — {{ getBudgetPercent(spent, total) }}%</span>
+            <div class="progress-bar">
+              <div class="progress-bar__fill" [style.width.%]="getBudgetPercent(spent, total)"
+                [class.progress-bar__fill--warn]="getBudgetPercent(spent, total) > 80"
+                [class.progress-bar__fill--danger]="getBudgetPercent(spent, total) > 95">
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+
+  <div class="content-grid">
+    <!-- Form Panel -->
+    <div class="form-panel">
+      <div class="form-panel__header">
+        <h2 class="form-panel__title">{{ editId ? 'Edit Campaign' : 'New Campaign' }}</h2>
+        <button *ngIf="editId" class="btn btn--ghost btn--sm" (click)="cancelEdit()">✕ Cancel</button>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+        <div class="field">
+          <label class="field__label">Campaign Name *</label>
+          <input class="field__input" type="text" formControlName="campaignName" placeholder="e.g. Summer Sale Warsaw" />
+          <span class="field__error">{{ getErrorMsg('campaignName') }}</span>
+        </div>
+
+        <div class="field">
+          <label class="field__label">Keywords *</label>
+          <input class="field__input" type="text" formControlName="keywords" placeholder="e.g. shoes, sale, fashion" />
+          <span class="field__error">{{ getErrorMsg('keywords') }}</span>
+        </div>
+
+        <div class="field">
+          <label class="field__label">Campaign Fund (PLN) *</label>
+          <input class="field__input" type="number" formControlName="campaignFund" min="1" placeholder="e.g. 500" />
+          <span class="field__error">{{ getErrorMsg('campaignFund') }}</span>
+        </div>
+
+        <div class="field">
+          <label class="field__label">City *</label>
+          <select class="field__input" formControlName="city">
+            <option value="" disabled>Select city</option>
+            <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
+          </select>
+          <span class="field__error">{{ getErrorMsg('city') }}</span>
+        </div>
+
+        <div class="field">
+          <label class="field__label">Radius (km) *</label>
+          <input class="field__input" type="number" formControlName="radius" min="1" max="500" placeholder="e.g. 25" />
+          <span class="field__error">{{ getErrorMsg('radius') }}</span>
+        </div>
+
+        <div class="field">
+          <label class="field__label">Status</label>
+          <div class="toggle-group">
+            <button type="button" class="toggle-btn"
+              [class.toggle-btn--active-on]="form.get('status')?.value === 'on'"
+              (click)="form.get('status')?.setValue('on')">
+              Active
+            </button>
+            <button type="button" class="toggle-btn"
+              [class.toggle-btn--active-off]="form.get('status')?.value === 'off'"
+              (click)="form.get('status')?.setValue('off')">
+              Inactive
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn--primary btn--full">
+          {{ editId ? '✓ Save Changes' : '+ Add Campaign' }}
+        </button>
+      </form>
+    </div>
+
+    <!-- List Panel -->
+    <div class="list-panel">
+      <div class="list-panel__toolbar">
+        <input class="search-input" type="text" [(ngModel)]="searchQuery" placeholder="🔍  Search campaigns..." />
+        <select class="filter-select" [(ngModel)]="filterCity">
+          <option value="">All cities</option>
+          <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
+        </select>
+        <select class="filter-select" [(ngModel)]="filterStatus">
+          <option value="">All statuses</option>
+          <option value="on">Active</option>
+          <option value="off">Inactive</option>
+        </select>
+      </div>
+
+      <ng-container *ngIf="campaigns$ | async as campaigns">
+        <ng-container *ngIf="getFilteredCampaigns(campaigns) as filtered">
+          <div class="list-summary">
+            {{ filtered.length }} of {{ campaigns.length }} campaign{{ campaigns.length !== 1 ? 's' : '' }}
+          </div>
+
+          <div *ngIf="filtered.length === 0" class="empty-state">
+            <div class="empty-state__icon">📋</div>
+            <div class="empty-state__text">{{ campaigns.length === 0 ? 'No campaigns yet. Create your first one!' : 'No campaigns match your filters.' }}</div>
+          </div>
+
+          <div class="table-wrapper" *ngIf="filtered.length > 0">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th class="th sortable" (click)="setSort('campaignName')">
+                    Name <span class="sort-icon">{{ sortField === 'campaignName' ? (sortDir === 'asc' ? '↑' : '↓') : '↕' }}</span>
+                  </th>
+                  <th class="th">Keywords</th>
+                  <th class="th sortable" (click)="setSort('campaignFund')">
+                    Fund <span class="sort-icon">{{ sortField === 'campaignFund' ? (sortDir === 'asc' ? '↑' : '↓') : '↕' }}</span>
+                  </th>
+                  <th class="th sortable" (click)="setSort('city')">
+                    City <span class="sort-icon">{{ sortField === 'city' ? (sortDir === 'asc' ? '↑' : '↓') : '↕' }}</span>
+                  </th>
+                  <th class="th">Radius</th>
+                  <th class="th">Status</th>
+                  <th class="th">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let c of filtered" class="table-row" [class.table-row--editing]="editId === c.id">
+                  <td class="td td--name">{{ c.campaignName }}</td>
+                  <td class="td td--keywords">{{ c.keywords }}</td>
+                  <td class="td td--fund">{{ c.campaignFund | number:'1.0-0' }} PLN</td>
+                  <td class="td">{{ c.city }}</td>
+                  <td class="td">{{ c.radius }} km</td>
+                  <td class="td">
+                    <span class="status-badge" [class.status-badge--on]="c.status === 'on'" [class.status-badge--off]="c.status === 'off'">
+                      {{ c.status === 'on' ? 'Active' : 'Inactive' }}
+                    </span>
+                  </td>
+                  <td class="td td--actions">
+                    <button class="action-btn action-btn--edit" (click)="startEdit(c)">Edit</button>
+                    <button class="action-btn action-btn--delete" (click)="requestDelete(c.id)">Delete</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+      </ng-container>
+    </div>
+  </div>
+</div>
+
+<app-confirm-dialog
+  [visible]="showConfirm"
+  (confirmed)="confirmDelete()"
+  (cancelled)="cancelDelete()">
+</app-confirm-dialog>
+
+<app-toast></app-toast>

@@ -1,0 +1,47 @@
+<div class="home-wrapper">
+  <div class="hero">
+    <div class="hero__logo">
+      <span class="hero__icon">◈</span>
+      <span class="hero__brand">AdManager</span>
+    </div>
+    <h1 class="hero__title">Campaign Management Platform</h1>
+    <p class="hero__subtitle">Create, track, and optimize your advertising campaigns across Polish cities.</p>
+  </div>
+
+  <ng-container *ngIf="hasCampaigns$ | async; else freshStart">
+    <div class="resume-card">
+      <div class="resume-card__info">
+        <span class="resume-card__label">Active account budget</span>
+        <span class="resume-card__value">{{ existingBudget$ | async | number:'1.0-0' }} PLN</span>
+      </div>
+      <button class="btn btn--primary" (click)="continueDashboard()">Continue to Dashboard →</button>
+    </div>
+    <div class="divider"><span>or set a new budget</span></div>
+  </ng-container>
+
+  <ng-template #freshStart></ng-template>
+
+  <div class="setup-card">
+    <h2 class="setup-card__title">Set your account budget</h2>
+    <p class="setup-card__hint">Minimum 500 PLN. This is the total amount available for all campaigns.</p>
+    <div class="setup-card__form">
+      <div class="input-group">
+        <input
+          type="number"
+          class="input"
+          [(ngModel)]="inputValue"
+          [min]="500"
+          placeholder="e.g. 5000"
+        />
+        <span class="input-suffix">PLN</span>
+      </div>
+      <button
+        class="btn btn--primary"
+        [disabled]="inputValue < 500"
+        (click)="goToNextPage()"
+      >
+        Start Managing →
+      </button>
+    </div>
+  </div>
+</div>
